@@ -1,0 +1,12 @@
+---
+appservers:
+  hosts:
+    ansible-vm:
+      ansible_host: az-devops # configure SSH Hostname in ~/.ssh/config
+
+dbservers:
+  hosts:
+    postgres-azure:
+      ansible_host: YOUR_DB_SERVER_IP # replace with your DB server's public IP
+      ansible_user: azureuser
+      ansible_ssh_private_key_file: ~/.ssh/id_rsa
