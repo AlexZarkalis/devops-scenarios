@@ -1,0 +1,43 @@
+---
+- name: Deploy Application with Docker Compose
+  hosts: appservers
+  become: yes
+
+  tasks:
+    - name: "Login to GitHub Container Registry"
+      community.docker.docker_login:
+        registry_url: "{{ docker_server }}"
+        username: "{{ docker_user }}"
+        password: "{{ docker_token }}"
+      no_log: true
+
+    - name: "Ensure application directory exists"
+      file:
+        path: "{{ appdir }}"
+        state: directory
+        owner: "{{ appuser }}"
+        group: "{{ appgroup }}"
+        mode: '0755'
+
+    - name: "Template docker-compose.yaml to application directory"
+      template:
+        src: ../docker-compose.yaml
+        dest: "{{ appdir }}/docker-compose.yaml"
+        owner: "{{ appuser }}"
+        group: "{{ appgroup }}"
+
+    - name: "Stop and remove old Docker Compose stack"
+      community.docker.docker_compose_v2:
+        project_src: "{{ appdir }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: "Deploy Docker Compose stack"
+      community.docker.docker_compose_v2:
+        project_src: "{{ appdir }}"
+        state: present
+        pull: always
+        recreate: always
+        build: never
+
+

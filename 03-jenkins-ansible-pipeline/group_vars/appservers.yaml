@@ -1,0 +1,9 @@
+appdir: "{{ ansible_facts['user_dir'] }}/spring"
+branch: "main"
+appuser: "{{ ansible_facts['user_id'] }}"
+appgroup: "{{ ansible_facts['user_gid'] }}"
+app_port: 9090
+db:
+  name: "appdb"
+  user: "appuser"
+  password: "apppassword" # test pass for development.
