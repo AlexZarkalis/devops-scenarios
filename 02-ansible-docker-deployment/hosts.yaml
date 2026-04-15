@@ -1,0 +1,5 @@
+---
+appservers:
+  hosts:
+    ansible-docker-vm:
+      ansible_host: az-devops # configure SSH Hostname in ~/.ssh/config

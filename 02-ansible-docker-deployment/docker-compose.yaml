@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER={{ db.user }}
+      - POSTGRES_PASSWORD={{ db.password }}
+      - POSTGRES_DB={{ db.name }}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U {{ db.user }}
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    volumes:
+      - 'realestatedb:/var/lib/postgresql/data/'
+  spring:
+    image: sp
+    restart: unless-stopped
+    build:
+      context: .
+    ports:
+      - "{{ app_port }}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/{{ db.name }}
+      - SPRING_DATASOURCE_USERNAME={{ db.user }}
+      - SPRING_DATASOURCE_PASSWORD={{ db.password }}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+volumes:
+  realestatedb:
