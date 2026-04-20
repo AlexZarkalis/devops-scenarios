@@ -1,0 +1,69 @@
+---
+- name: Deploy Spring Application to MicroK8s
+  hosts: appservers
+  become: no
+  tasks:
+    - name: "Remove old registry credentials secret"
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Secret
+        name: registry-credentials
+        namespace: default
+
+    - name: "Create registry credentials secret"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: registry-credentials
+            namespace: default
+          type: kubernetes.io/dockerconfigjson
+          stringData:
+            .dockerconfigjson: |
+              {
+                "auths": {
+                  "{{ docker_server }}": {
+                    "auth": "{{ (docker_user + ':' + docker_token) | b64encode }}"
+                  }
+                }
+              }
+      no_log: true
+
+    - name: "Deploy Spring Service"
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', '../microk8s/spring/spring-svc.yaml') | from_yaml }}"
+
+    - name: "Deploy Spring Deployment"
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', '../microk8s/spring/spring-deployment.yaml') | from_yaml }}"
+
+    - name: "Deploy Let's Encrypt ClusterIssuer"
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', '../microk8s/spring/cluster-issuer.yaml') | from_yaml }}"
+
+    - name: "Deploy Spring Ingress"
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', '../microk8s/spring/spring-ingress.yaml') | from_yaml }}"
+
+    - name: "Wait for Spring Deployment to be ready"
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        name: spring-deployment
+        namespace: default
+        wait: yes
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_sleep: 10
+        wait_timeout: 300
+
+    - name: "Display deployment info"
+      debug:
+        msg: "Application deployed successfully to MicroK8s."

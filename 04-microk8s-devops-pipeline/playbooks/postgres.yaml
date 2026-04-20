@@ -1,0 +1,46 @@
+---
+- name: Deploy PostgreSQL to MicroK8s
+  hosts: appservers
+  become: no
+  tasks:
+    - name: "Create PostgreSQL credentials secret"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: postgres-secret
+            namespace: default
+          type: Opaque
+          stringData:
+            password: "{{ db.password }}"
+            username: "{{ db.user }}"
+      no_log: true
+
+    - name: "Deploy PostgreSQL PVC"
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', '../microk8s/postgres/postgres-pvc.yaml') | from_yaml }}"
+
+    - name: "Deploy PostgreSQL Service"
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', '../microk8s/postgres/postgres-svc.yaml') | from_yaml }}"
+
+    - name: "Deploy PostgreSQL Deployment"
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', '../microk8s/postgres/postgres-deployment.yaml') | from_yaml }}"
+
+    - name: "Wait for PostgreSQL to be ready"
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        name: postgres-deployment
+        namespace: default
+        wait: yes
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_sleep: 10
+        wait_timeout: 300

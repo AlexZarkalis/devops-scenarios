@@ -1,0 +1,13 @@
+db:
+  name: "appdb"
+  user: "appuser"
+  password: "apppassword"  # for development only
+
+docker_server: "ghcr.io"
+docker_user: "alexzarkalis"
+docker_token: "{{ lookup('env', 'GHCR_TOKEN', default='') }}"
+docker_prefix: "ghcr.io/alexzarkalis/realestate"
+image_tag: "latest"
+
+app_domain: "realestate.cloud-ip.cc"  # Replace with actual ClouDNS domain
+letsencrypt_email: "your.real.email@gmail.com" # example email for ssl
