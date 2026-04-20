@@ -47,12 +47,11 @@ This scenario runs entirely on a **single Azure VM** where Jenkins, Ansible, Doc
     *   ID `github-ssh`: Kind `SSH Username with private key`, username `git`, your GitHub SSH private key.
     *   ID `ghcr-token`: Kind `Secret text`, your GitHub PAT from the previous step.
 
-6.  **Create two Jenkins Freestyle jobs:**
-    *   **job1**: Git → `git@github.com:AlexZarkalis/realEstate.git`, credentials `github-ssh`, branch `temp-jenkins-test`.
-    *   **job2**: Git → `git@github.com:AlexZarkalis/devops-scenarios.git`, credentials `github-ssh`, branch `main`.
+6.  **Create a Jenkins Freestyle job for Infrastructure Code:**
+    *   **job2**: Git → `git@github.com:AlexZarkalis/devops-scenarios.git`, credentials `github-ssh`, branch `main`. This job is triggered by the pipeline to pull your Ansible configuration.
 
 7.  **Create the main Pipeline job:**
-    *   Pipeline script from SCM → Git → `git@github.com:AlexZarkalis/realEstate.git`, branch `temp-jenkins-test`, Script Path: `Jenkinsfile`.
+    *   Pipeline script from SCM → Git → `git@github.com:AlexZarkalis/realEstate.git`, branch `main`, Script Path: `Jenkinsfile`.
     *   Build Triggers: enable **GitHub hook trigger for GITScm polling** and add a webhook in the GitHub repo: `http://<YOUR_VM_IP>:8080/github-webhook/`.
 
 8.  **Allow inbound ports on Azure VM** (Network Security Group):
