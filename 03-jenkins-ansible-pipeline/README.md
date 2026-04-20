@@ -2,7 +2,7 @@
 
 This project provides a Jenkins-based CI/CD pipeline that automatically builds, tests, and deploys a Spring Boot application with a PostgreSQL database using Ansible and Docker Compose on an Azure VM.
 
-The application being deployed is the [realEstate](https://github.com/AlexZarkalis/realEstate/tree/temp-jenkins-test) Spring Boot project. The `Jenkinsfile` and `Dockerfile` are located in that repository.
+The application being deployed is the [realEstate](https://github.com/AlexZarkalis/realEstate/) Spring Boot project. The `Jenkinsfile` and `Dockerfile` are located in that repository.
 
 ## Architecture
 
